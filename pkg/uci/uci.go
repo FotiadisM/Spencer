@@ -2,35 +2,54 @@ package uci
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"os"
 	"strings"
 )
 
-type Interface struct{}
+func Start(r io.Reader, w io.Writer, e Engine, ei EngineInfo) error {
+	out := make(chan string)
+	defer close(out)
 
-func NewInterface() Interface {
-	return Interface{}
-}
+	go func() {
+		for s := range out {
+			fmt.Fprint(w, s)
+		}
+	}()
 
-func (ui Interface) Run(r io.Reader) error {
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		line := strings.ToLower(strings.TrimSpace(scanner.Text()))
 
-		cmds := strings.Fields(line)
-		switch cmds[0] {
+		str := strings.Fields(line)
+		if len(str) == 0 {
+			continue
+		}
+
+		switch str[0] {
 		case "uci":
+			uciHandler(e, ei, out)
 		case "debug":
+			debugHandler(e, out)
 		case "isready":
+			isReadyHandler(e, out)
 		case "setoption":
+			setOptionHandler(e, str, out)
 		case "register":
+			registerHandler(e, str, out)
 		case "ucinewgame":
+			uciNewGameHandler(e, out)
 		case "position":
+			positionHandler(e, str, out)
 		case "stop":
+			stopHandler(e, out)
 		case "ponderhit":
+			ponderHitHandler(e, out)
 		case "quit", "q":
-			break
+			return nil
+		default:
+			out <- "info string error invalid command\n"
 		}
 	}
 

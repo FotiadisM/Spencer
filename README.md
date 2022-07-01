@@ -1,3 +1,3 @@
 # Spencer
 
-A chess engine built in Go.
+A chess engine written in Go.
