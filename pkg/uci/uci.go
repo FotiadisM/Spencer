@@ -31,7 +31,7 @@ func Start(r io.Reader, w io.Writer, e Engine, ei EngineInfo) error {
 		case "uci":
 			uciHandler(e, ei, out)
 		case "debug":
-			debugHandler(e, out)
+			debugHandler(e, str, out)
 		case "isready":
 			isReadyHandler(e, out)
 		case "setoption":
@@ -42,6 +42,8 @@ func Start(r io.Reader, w io.Writer, e Engine, ei EngineInfo) error {
 			uciNewGameHandler(e, out)
 		case "position":
 			positionHandler(e, str, out)
+		case "go":
+			goHandler(e, str, out)
 		case "stop":
 			stopHandler(e, out)
 		case "ponderhit":
