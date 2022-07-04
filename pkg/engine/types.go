@@ -35,11 +35,11 @@ const (
 	MoveNull Move = 65
 )
 
-func MakeSimpleMove(fr, to Square) Move {
+func NewSimpleMove(fr, to Square) Move {
 	return Move((int(fr) << 6) + int(to))
 }
 
-func MakeMove(fr, to Square, pt PieceType, mt MoveType) Move {
+func NewMove(fr, to Square, pt PieceType, mt MoveType) Move {
 	return Move(int(mt) + (int(pt-Knight) << 12) + (int(fr) << 6) + int(to))
 }
 
@@ -117,7 +117,7 @@ const (
 	PieceNB Piece = 16
 )
 
-func MakePiece(c Color, pt PieceType) Piece {
+func NewPiece(c Color, pt PieceType) Piece {
 	return Piece((int(c) << 3) + int(pt))
 }
 
@@ -171,6 +171,10 @@ const (
 	FileNB
 )
 
+func (f File) Bitboard() Bitboard {
+	return FileABB << f
+}
+
 type Rank int
 
 const (
@@ -187,6 +191,10 @@ const (
 
 func (r Rank) RelativeRank(c Color) Rank {
 	return Rank(int(r) ^ (int(c) * 7))
+}
+
+func (r Rank) Bitboard() Bitboard {
+	return Rank1BB << (8 * r)
 }
 
 type Square int
@@ -268,8 +276,19 @@ const (
 	SquareNB   Square = 64
 )
 
-func MakeSquare(f File, r Rank) Square {
+func NewSquare(f File, r Rank) Square {
 	return Square((int(r) << 3) + int(f))
+}
+
+func (s Square) IsOK() bool {
+	return s >= SquareA1 && s <= SquareH8
+}
+
+func (s Square) Bitboard() Bitboard {
+	if !s.IsOK() {
+		panic("Suqare out of range")
+	}
+	return SquareBB[s]
 }
 
 func (s Square) FlipRank() Square {
@@ -280,11 +299,11 @@ func (s Square) FlipFile() Square {
 	return s ^ SquareH1
 }
 
-func (s Square) RankOf() Rank {
+func (s Square) GetRank() Rank {
 	return Rank(int(s) >> 3)
 }
 
-func (s Square) FileOf() File {
+func (s Square) GetFile() File {
 	return File(int(s) & 7)
 }
 
@@ -293,5 +312,9 @@ func (s Square) RelativeSquare(c Color) Square {
 }
 
 func (s Square) RelativeRank(c Color) Rank {
-	return s.RankOf().RelativeRank(c)
+	return s.GetRank().RelativeRank(c)
+}
+
+func (s Square) RankBB() Bitboard {
+	return s.GetRank().Bitboard()
 }
