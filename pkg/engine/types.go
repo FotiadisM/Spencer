@@ -55,7 +55,7 @@ func (m Move) ToSquare() Square {
 	return Square(m & 0x3F)
 }
 
-func (m Move) TypeOf() MoveType {
+func (m Move) Type() MoveType {
 	return MoveType(int(m) & (3 << 14))
 }
 
@@ -117,15 +117,20 @@ const (
 	PieceNB Piece = 16
 )
 
+func (pc Piece) String() string {
+	pieceToChar := " PNBRQK  pnbrqk"
+	return string(pieceToChar[pc])
+}
+
 func NewPiece(c Color, pt PieceType) Piece {
 	return Piece((int(c) << 3) + int(pt))
 }
 
-func (pc Piece) TypeOf() PieceType {
+func (pc Piece) Type() PieceType {
 	return PieceType(pc & 7)
 }
 
-func (pc Piece) ColorOf() PieceType {
+func (pc Piece) Color() PieceType {
 	if pc == NoPiece {
 		panic("Piece is of type NoPiece")
 	}
@@ -175,6 +180,10 @@ func (f File) Bitboard() Bitboard {
 	return FileABB << f
 }
 
+func (f File) String() string {
+	return string('0' + rune(f))
+}
+
 type Rank int
 
 const (
@@ -195,6 +204,10 @@ func (r Rank) RelativeRank(c Color) Rank {
 
 func (r Rank) Bitboard() Bitboard {
 	return Rank1BB << (8 * r)
+}
+
+func (r Rank) String() string {
+	return string('A' + rune(r))
 }
 
 type Square int
@@ -299,11 +312,11 @@ func (s Square) FlipFile() Square {
 	return s ^ SquareH1
 }
 
-func (s Square) GetRank() Rank {
+func (s Square) Rank() Rank {
 	return Rank(int(s) >> 3)
 }
 
-func (s Square) GetFile() File {
+func (s Square) File() File {
 	return File(int(s) & 7)
 }
 
@@ -312,9 +325,9 @@ func (s Square) RelativeSquare(c Color) Square {
 }
 
 func (s Square) RelativeRank(c Color) Rank {
-	return s.GetRank().RelativeRank(c)
+	return s.Rank().RelativeRank(c)
 }
 
 func (s Square) RankBB() Bitboard {
-	return s.GetRank().Bitboard()
+	return s.Rank().Bitboard()
 }

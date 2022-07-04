@@ -20,7 +20,7 @@ func Start(r io.Reader, w io.Writer, e Engine, ei EngineInfo) error {
 
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
-		line := strings.ToLower(strings.TrimSpace(scanner.Text()))
+		line := strings.TrimSpace(scanner.Text())
 
 		str := strings.Fields(line)
 		if len(str) == 0 {
