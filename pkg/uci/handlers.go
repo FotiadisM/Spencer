@@ -1,6 +1,9 @@
 package uci
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 const startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
@@ -49,11 +52,11 @@ func isReadyHandler(e Engine, out chan string) {
 }
 
 func setOptionHandler(e Engine, str []string, out chan string) {
-	// TODO: Implement
+	// TODO: implement
 }
 
 func registerHandler(e Engine, str []string, out chan string) {
-	// TODO: Implement
+	// TODO: implement
 }
 
 func uciNewGameHandler(e Engine, out chan string) {
@@ -77,9 +80,14 @@ func positionHandler(e Engine, str []string, out chan string) {
 			return
 		}
 		str = str[1:]
-		e.SetPosition(str[0], out)
-		str = str[1:]
+		if len(str) < 6 {
+			out <- "info string error invalid command\n"
+			return
+		}
+		e.SetPosition(strings.Join(str[:6], " "), out)
+		str = str[6:]
 	default:
+		out <- "info string error invalid command\n"
 		return
 	}
 
@@ -111,5 +119,5 @@ func stopHandler(e Engine, out chan string) {
 }
 
 func ponderHitHandler(e Engine, out chan string) {
-	// TODO: Implement
+	// TODO: implement
 }

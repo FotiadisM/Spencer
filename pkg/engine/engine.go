@@ -20,6 +20,7 @@ func (e Engine) SetPosition(fen string, out chan string) {
 }
 
 func (e Engine) ApplyMove(mv string, out chan string) {
+	out <- mv + "\n"
 }
 
 func (e Engine) Search(esl uci.EngineSearchLimits, out chan string) {

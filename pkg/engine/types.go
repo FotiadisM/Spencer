@@ -181,7 +181,7 @@ func (f File) Bitboard() Bitboard {
 }
 
 func (f File) String() string {
-	return string('0' + rune(f))
+	return string('A' + rune(f))
 }
 
 type Rank int
@@ -207,7 +207,7 @@ func (r Rank) Bitboard() Bitboard {
 }
 
 func (r Rank) String() string {
-	return string('A' + rune(r))
+	return string('0' + rune(r))
 }
 
 type Square int
