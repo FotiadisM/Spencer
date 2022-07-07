@@ -35,12 +35,12 @@ const (
 	MoveNull Move = 65
 )
 
-func NewSimpleMove(fr, to Square) Move {
-	return Move((int(fr) << 6) + int(to))
+func NewSimpleMove(from, to Square) Move {
+	return Move((int(from) << 6) + int(to))
 }
 
-func NewMove(fr, to Square, pt PieceType, mt MoveType) Move {
-	return Move(int(mt) + (int(pt-Knight) << 12) + (int(fr) << 6) + int(to))
+func NewMove(from, to Square, pt PieceType, mt MoveType) Move {
+	return Move(int(mt) + (int(pt-Knight) << 12) + (int(from) << 6) + int(to))
 }
 
 func (m Move) IsOK() bool {
@@ -130,11 +130,11 @@ func (pc Piece) Type() PieceType {
 	return PieceType(pc & 7)
 }
 
-func (pc Piece) Color() PieceType {
+func (pc Piece) Color() Color {
 	if pc == NoPiece {
 		panic("Piece is of type NoPiece")
 	}
-	return PieceType(pc >> 3)
+	return Color(pc >> 3)
 }
 
 func (pc Piece) SwapColor() Piece {
@@ -284,6 +284,8 @@ const (
 	SquareF8
 	SquareG8
 	SquareH8
+
+	SquareNone
 
 	SquareZero Square = 0
 	SquareNB   Square = 64

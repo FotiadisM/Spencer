@@ -7,10 +7,14 @@ import (
 )
 
 type State struct {
-	castlingRights CastlingRights
+	// copied when making a move
+
+	castlingRights int
 	rule50         int
 	pliesFromNull  int
 	epSquare       Square
+
+	// recalculated
 
 	checkersBB    Bitboard
 	kingBlockers  [ColorNB]Bitboard
@@ -19,7 +23,16 @@ type State struct {
 	capturedPiece Piece
 	repetition    int
 
-	previous *State
+	prevState *State
+}
+
+func (s State) Copy() *State {
+	return &State{
+		castlingRights: s.castlingRights,
+		rule50:         s.rule50,
+		pliesFromNull:  s.pliesFromNull,
+		epSquare:       s.epSquare,
+	}
 }
 
 type Position struct {
@@ -32,6 +45,7 @@ type Position struct {
 	castlingRookSquare [CastlingRightsNB]Square
 	castlingPath       [CastlingRightsNB]Bitboard
 	state              *State
+	gamePly            int
 }
 
 func NewPosition(fen string) *Position {
@@ -115,24 +129,24 @@ func (p *Position) RemovePiece(s Square) {
 	p.pieceCount[NewPiece(Color(pc.Color()), AllPieces)]--
 }
 
-func (p *Position) movePiece(fr, to Square) {
-	pc := p.board[fr]
-	fromTo := fr.Bitboard() | to.Bitboard()
+func (p *Position) movePiece(from, to Square) {
+	pc := p.board[from]
+	fromTo := from.Bitboard() | to.Bitboard()
 	p.byTypeBB[AllPieces] ^= fromTo
 	p.byTypeBB[pc.Type()] ^= fromTo
 	p.byColorBB[pc.Color()] ^= fromTo
-	p.board[fr] = NoPiece
+	p.board[from] = NoPiece
 	p.board[to] = pc
 }
 
 // Castling
 
 func (p Position) CastlingRights(c Color) CastlingRights {
-	return CastlingRights(c) & p.state.castlingRights
+	return CastlingRights(c) & CastlingRights(p.state.castlingRights)
 }
 
 func (p Position) CanCastle(cr CastlingRights) bool {
-	if p.state.castlingRights&cr == 0 {
+	if CastlingRights(p.state.castlingRights)&cr == 0 {
 		return false
 	}
 	return true
@@ -147,6 +161,16 @@ func (p Position) CastlingImpeded(cr CastlingRights) bool {
 
 func (p Position) CastlingRookSquare(cr CastlingRights) Square {
 	return p.castlingRookSquare[cr]
+}
+
+func (p Position) doCastling(c Color, from, to Square) (rfrom, rto Square) {
+	// TODO: implement
+	return 0, 0
+}
+
+func (p Position) undoCastling(c Color, from, to Square) (rfrom, rto Square) {
+	// TODO: implement
+	return 0, 0
 }
 
 // Checking
@@ -212,6 +236,67 @@ func (p Position) CapturedPiece(m Move) Piece {
 // Doing and undoing moves
 
 func (p *Position) DoMove(m Move) {
+	newSt := p.state.Copy()
+	newSt.prevState = p.state
+	p.state = newSt
+
+	p.gamePly++
+	p.state.rule50++
+	p.state.pliesFromNull++
+
+	us := p.sideToMove
+	them := 1 - us
+	from := m.FromSquare()
+	to := m.ToSquare()
+	pc := p.PieceOn(from)
+	captured := p.PieceOn(to)
+	if m.Type() == EnPassant {
+		captured = NewPiece(them, Pawn)
+	}
+
+	if m.Type() == Castling {
+		p.doCastling(us, from, to)
+		captured = NoPiece
+	}
+
+	if captured != NoPiece {
+		capsq := to
+
+		if captured.Type() == Pawn {
+			if m.Type() == EnPassant {
+				capsq -= Square(PawnPush(us))
+			}
+		}
+
+		p.RemovePiece(capsq)
+
+		if m.Type() == EnPassant {
+			p.board[capsq] = NoPiece
+		}
+
+		p.state.rule50 = 0
+	}
+
+	p.state.epSquare = SquareNone
+
+	if p.state.castlingRights != 0 {
+		if p.castlingRightsMask[from] != 0 || p.castlingRightsMask[to] != 0 {
+			p.state.castlingRights &= ^(p.castlingRightsMask[from] | p.castlingRightsMask[to] )
+		}
+
+	}
+
+	if m.Type() != Castling {
+		p.movePiece(from, to)
+	}
+
+	if pc.Type() == Pawn {
+	// TODO: implement
+		p.state.rule50 = 0
+	}
+
+	p.state.capturedPiece = captured
+
 	// TODO: implement
 }
 
