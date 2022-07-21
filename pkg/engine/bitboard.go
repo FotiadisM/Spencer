@@ -42,10 +42,7 @@ var (
 )
 
 func (b Bitboard) MoreThanOne() bool {
-	if b&(b-1) == 0 {
-		return false
-	}
-	return true
+	return b&(b-1) != 0
 }
 
 func (b Bitboard) Shift(d Direction) Bitboard {

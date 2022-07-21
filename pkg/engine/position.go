@@ -146,17 +146,11 @@ func (p Position) CastlingRights(c Color) CastlingRights {
 }
 
 func (p Position) CanCastle(cr CastlingRights) bool {
-	if CastlingRights(p.state.castlingRights)&cr == 0 {
-		return false
-	}
-	return true
+	return CastlingRights(p.state.castlingRights)&cr != 0
 }
 
 func (p Position) CastlingImpeded(cr CastlingRights) bool {
-	if p.byTypeBB[AllPieces]&p.castlingPath[cr] == 0 {
-		return false
-	}
-	return true
+	return p.byTypeBB[AllPieces]&p.castlingPath[cr] != 0
 }
 
 func (p Position) CastlingRookSquare(cr CastlingRights) Square {
@@ -281,9 +275,8 @@ func (p *Position) DoMove(m Move) {
 
 	if p.state.castlingRights != 0 {
 		if p.castlingRightsMask[from] != 0 || p.castlingRightsMask[to] != 0 {
-			p.state.castlingRights &= ^(p.castlingRightsMask[from] | p.castlingRightsMask[to] )
+			p.state.castlingRights &= ^(p.castlingRightsMask[from] | p.castlingRightsMask[to])
 		}
-
 	}
 
 	if m.Type() != Castling {
@@ -291,7 +284,7 @@ func (p *Position) DoMove(m Move) {
 	}
 
 	if pc.Type() == Pawn {
-	// TODO: implement
+		// TODO: implement
 		p.state.rule50 = 0
 	}
 

@@ -14,6 +14,7 @@ func uciHandler(e Engine, ei EngineInfo, out chan string) {
 	}
 
 	for _, o := range ei.Options {
+		// BUG: option String is unreachable, plus no reason to check all since most Interfaces are the same
 		switch o := o.(type) {
 		case UCIOptionCheck:
 			out <- fmt.Sprintf("option name %v type %v default %v\n", o.Name(), o.Type(), o.Default())
