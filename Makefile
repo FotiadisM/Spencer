@@ -1,7 +1,7 @@
 # Setting SHELL to bash allows bash commands to be executed by recipes.
 # Options are set to exit when a recipe line exits non-zero or a piped command fails.
-SHELL = /usr/bin/env bash -o pipefail
-.SHELLFLAGS = -ec
+SHELL = /usr/bin/env bash
+.SHELLFLAGS = -o pipefail -ec
 
 .PHONY: all
 all: build
@@ -22,32 +22,36 @@ help: ## Display this help.
 ##@ Development
 
 .PHONY: run
-run: fmt vet ## Run Spencer (only suitable for development).
-	go run ./cmd/spencer
+run: ## Run Spencer (only suitable for development).
+	go run -race ./cmd/spencer
 
 .PHONY: fmt
 fmt: gofumpt ## Run gofumpt against code.
-	./bin/gofumpt -w .
+	$(GOFUMPT) -w .
 
 .PHONY: vet
 vet: ## Run go vet against code.
 	go vet ./...
 
+.PHONY: lint
+lint: golangci ## Run golangci-lint against code.
+	$(GOLANGCILINT) run
+
 ##@ Build
 
 .PHONY: build
-build: fmt vet ## Compile Spencer
-	go build -o ./bin/spencer ./cmd/spencer
+build: fmt vet lint ## Compile Spencer
+	go build -o $(LOCALBIN)/spencer ./cmd/spencer
 
-##@ Deployment
+##@ Installation
 
 .PHONY: install
 install: build ## Install Spencer.
-	echo 'not implemented'
+	cp $(LOCALBIN)/spencer $(shell go env GOBIN)/
 
 .PHONY: uninstall
-uninstall: manifests kustomize ## Uninstall Spencer.
-	echo 'not implemented'
+uninstall: ## Uninstall Spencer.
+	-rm $(shell go env GOBIN)/spencer
 
 ##@ Build Dependencies
 
@@ -58,11 +62,23 @@ $(LOCALBIN):
 
 ## Tool Binaries
 GOFUMPT ?= $(LOCALBIN)/gofumpt
+GOLANGCILINT ?= $(LOCALBIN)/golangci-lint
 
 ## Tool Versions
 GOFUMPT_VERSION ?= v0.3.1
+GOLANGCILINT_VERSION ?= v1.49.0
 
 .PHONY: gofumpt
 gofumpt: $(GOFUMPT) ## Download gofumpt locally if necessary.
-$(GOFUMPT): $(LOCALBIN)
+$(GOFUMPT): | $(LOCALBIN)
 	GOBIN=$(LOCALBIN) go install mvdan.cc/gofumpt@$(GOFUMPT_VERSION)
+
+.PHONY: golangci
+golangci: | $(LOCALBIN) ## Download golangci-lint locally if necessary.
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(LOCALBIN) $(GOLANGCILINT_VERSION)
+
+##@ Clean
+
+.PHONY: clean
+clean: uninstall ## Remove compiled binaries and build tools
+	-rm -rf $(LOCALBIN)
