@@ -1,8 +1,18 @@
 package uci
 
+type UCIOptionType int
+
+const (
+	Check UCIOptionType = iota
+	Spin
+	Combo
+	Button
+	String
+)
+
 type EngineOption interface {
 	Name() string
-	Type() string
+	Type() UCIOptionType
 }
 
 type UCIOptionCheck interface {

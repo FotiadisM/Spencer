@@ -4,6 +4,7 @@ import (
 	"github.com/FotiadisM/spencer/pkg/uci"
 )
 
+// Engine satisfies the interface uci.Engine
 type Engine struct {
 	position *Position
 }
