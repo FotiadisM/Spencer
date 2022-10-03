@@ -197,6 +197,13 @@ func (p Position) attackersTo(s Square, occupied Bitboard) Bitboard {
 
 // Properties of Moves
 
+// NewUCIMove() converts a string representing a move in coordinate notation
+// (g1f3, a7a8q) to the corresponding legal Move, if any.
+func (p Position) NewUCIMove(str string) Move {
+	// TODO: implement
+	return MoveNone
+}
+
 func (p Position) IsMoveLegal(m Move) bool {
 	// TODO: implement
 	return false
@@ -230,6 +237,10 @@ func (p Position) CapturedPiece(m Move) Piece {
 // Doing and undoing moves
 
 func (p *Position) DoMove(m Move) {
+	p.doMove(m, p.GivesCheck(m))
+}
+
+func (p *Position) doMove(m Move, givesCheck bool) {
 	newSt := p.state.Copy()
 	newSt.prevState = p.state
 	p.state = newSt
@@ -284,11 +295,22 @@ func (p *Position) DoMove(m Move) {
 	}
 
 	if pc.Type() == Pawn {
-		// TODO: implement
+		if int(to)^int(from) == 16 && (PawnAttacksBB(us, Square(to-Square(PawnPush(us))).Bitboard())&p.Pieces(them, Pawn) != 0) {
+			p.state.epSquare = to - Square(PawnPush(us))
+		} else if m.Type() == Promotion {
+			promPc := NewPiece(us, m.PromotionType())
+			p.RemovePiece(to)
+			p.PutPiece(promPc, to)
+		}
 		p.state.rule50 = 0
 	}
 
 	p.state.capturedPiece = captured
+
+	p.state.checkersBB = 0
+	if givesCheck {
+		p.state.checkersBB = p.AttackersTo(Square(p.Pieces(them, King).lsb()))
+	}
 
 	// TODO: implement
 }

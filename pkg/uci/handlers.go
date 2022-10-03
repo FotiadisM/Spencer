@@ -53,10 +53,10 @@ func debugHandler(e Engine, str []string, out chan string) {
 }
 
 func isReadyHandler(e Engine, out chan string) {
-	out <- "readyok"
+	out <- "readyok\n"
 }
 
-func setOptionHandler(e Engine, str []string, out chan string) {
+func setOptionHandler(e Engine, opts []EngineOption, str []string, out chan string) {
 	// TODO: implement
 }
 

@@ -1,5 +1,7 @@
 package engine
 
+import "math/bits"
+
 type Bitboard uint64
 
 const (
@@ -45,6 +47,10 @@ func (b Bitboard) MoreThanOne() bool {
 	return b&(b-1) != 0
 }
 
+func (b Bitboard) lsb() int {
+	return bits.LeadingZeros64(uint64(b))
+}
+
 func (b Bitboard) Shift(d Direction) Bitboard {
 	switch d {
 	case North:
@@ -80,9 +86,9 @@ func PawnAttacksBB(c Color, b Bitboard) Bitboard {
 }
 
 type Magic struct {
+	Attacks []Bitboard
 	Mask    Bitboard
 	Magic   Bitboard
-	Attacks []Bitboard
 	Shift   uint
 }
 

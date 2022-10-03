@@ -1,5 +1,7 @@
 package engine
 
+import "strings"
+
 type Color int
 
 const (
@@ -61,6 +63,38 @@ func (m Move) Type() MoveType {
 
 func (m Move) PromotionType() PieceType {
 	return PieceType(((int(m) >> 12) & 3) + int(Knight))
+}
+
+// String() converts a Move to a string in coordinate notation (g1f3, a7a8q).
+// Internally, all castling moves are always encoded as 'king captures rook'.
+func (m Move) String() string {
+	from := m.FromSquare()
+	to := m.ToSquare()
+
+	if m == MoveNone {
+		return "(none)"
+	}
+
+	if m == MoveNull {
+		return "0000"
+	}
+
+	if m.Type() == Castling {
+		if to > from {
+			to = NewSquare(FileG, from.Rank())
+		} else {
+			to = NewSquare(FileC, from.Rank())
+		}
+	}
+
+	str := from.String() + to.String()
+
+	if m.Type() == Promotion {
+		promToChar := " pnbrqk"
+		str += string([]rune(promToChar)[m.PromotionType()])
+	}
+
+	return strings.ToLower(str)
 }
 
 type CastlingRights int
@@ -332,4 +366,8 @@ func (s Square) RelativeRank(c Color) Rank {
 
 func (s Square) RankBB() Bitboard {
 	return s.Rank().Bitboard()
+}
+
+func (s Square) String() string {
+	return s.File().String() + s.Rank().String()
 }

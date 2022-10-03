@@ -35,7 +35,7 @@ func Start(r io.Reader, w io.Writer, e Engine, ei EngineInfo) error {
 		case "isready":
 			isReadyHandler(e, out)
 		case "setoption":
-			setOptionHandler(e, str, out)
+			setOptionHandler(e, ei.Options, str, out)
 		case "register":
 			registerHandler(e, str, out)
 		case "ucinewgame":

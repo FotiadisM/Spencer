@@ -12,7 +12,7 @@ func main() {
 	e := engine.Engine{}
 	ei := uci.EngineInfo{
 		Name:    "Spencer",
-		Version: "alpha",
+		Version: "developing",
 		Authros: []string{"Michalis Fotiadis"},
 		Options: []uci.EngineOption{},
 	}
